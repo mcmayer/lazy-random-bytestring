@@ -1,6 +1,6 @@
 # lazy-random-bytestring
 
-Repo for Stackoverflow question.
+Repo for a [Stackoverflow question](https://stackoverflow.com/questions/51374714/lazy-bytestring-generation-example-random-lazy-bytestring).
 
  `Main.hs` has all the code, `make prof` runs the profiler.
 
