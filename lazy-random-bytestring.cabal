@@ -22,3 +22,5 @@ executable lazy-random-bytestring
                      , bytestring
                      , word8
   ghc-prof-options: -fprof-auto
+  ghc-options: -O2 -fforce-recomp -optc "-funroll-loops" -fllvm -threaded -funbox-strict-fields -ddump-asm -ddump-simpl
+    

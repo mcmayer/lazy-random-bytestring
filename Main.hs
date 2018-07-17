@@ -6,7 +6,7 @@ import           Data.ByteString.Lazy.Builder (Builder, toLazyByteString, word8)
 import           Data.Word8                   (Word8 (..))
 import           System.Environment           (getArgs)
 import           System.Exit                  (exitFailure)
-import           System.IO                    (hPutStrLn, stderr)
+import           System.IO                    (hPutStrLn, stderr, stdout)
 import           System.Random
 
 -- |Version 1: Recurse with cons
@@ -47,4 +47,4 @@ main = do
     when (null args) $ hPutStrLn stderr "How many bytes do you want?" >> exitFailure
     let len = read (head args) :: Int
     gen <- getStdGen
-    BSL.putStr (lazyRandomByteString3 len gen)
+    BSL.hPut stdout (lazyRandomByteString3 len gen)
