@@ -1,3 +1,4 @@
+{-# LANGUAGE BangPatterns #-}
 module Main where
 
 import           Control.Monad                (when)
@@ -18,7 +19,7 @@ newXorRNG = XorRNG <$> (randomIO :: IO Word)
 
 {-# INLINE rand #-}
 rand :: XorRNG -> (Word8, XorRNG)
-rand (XorRNG x) = (fromIntegral x3, XorRNG x3) where
+rand (XorRNG !x) = (fromIntegral x3, XorRNG x3) where
     x1 = x `xor` (x `shiftL` 13)
     x2 = x1 `xor` (x1 `shiftR` 17)
     x3 = x2 `xor` (x2 `shiftL` 5)
@@ -47,11 +48,21 @@ lazyRandomByteString2 n g = BSL.unfoldr f (Iter2 n g) where
         else Just (w, Iter2 (n'-1) g'') where
             (w, g'') = rand g'
 
+data Iter2' = Iter2' !Int !StdGen
+
+lazyRandomByteString2' :: Int -> StdGen -> BSL.ByteString
+lazyRandomByteString2' n g = BSL.unfoldr f (Iter2' n g) where
+    {-# INLINE f #-}
+    f (Iter2' n' g') =
+        if n' == 0 then Nothing
+        else Just (w, Iter2' (n'-1) g'') where
+            (w, g'') = random g' :: (Word8, StdGen)
+
 data Iter3 = Iter3 Builder !Int !XorRNG
 
 -- |Version 3: Use [`Builder`](https://hackage.haskell.org/package/bytestring-0.10.0.2/docs/Data-ByteString-Lazy-Builder.html#t:Builder)
 lazyRandomByteString3 :: Int -> XorRNG -> BSL.ByteString
-lazyRandomByteString3 n g = toLazyByteString $ builder where
+lazyRandomByteString3 n g = toLazyByteString builder where
     builder :: Builder
     builder = fst3 $ iter (Iter3 mempty n g) where
         fst3 (Iter3 a _ _) = a
@@ -68,4 +79,6 @@ main = do
     when (null args) $ hPutStrLn stderr "How many bytes do you want?" >> exitFailure
     let len = read (head args) :: Int
     gen <- newXorRNG
-    BSL.hPut stdout (lazyRandomByteString1 len gen)
+    BSL.hPut stdout (lazyRandomByteString3 len gen)
+    --gen <- getStdGen
+    --BSL.hPut stdout (lazyRandomByteString2' len gen)

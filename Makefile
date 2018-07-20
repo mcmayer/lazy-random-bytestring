@@ -9,4 +9,10 @@ lazy-random-bytestring.prof: build-profile
 build-profile:
 	stack build --profile  
 
-.PHONY: lazy-random-bytestring prof build-profile
+bin/lazy-random-bytestring: Main.hs
+	stack install --local-bin-path bin
+	
+valgrind: bin/lazy-random-bytestring
+	valgrind --tool=massif $<
+
+.PHONY: lazy-random-bytestring prof build-profile valgrind
